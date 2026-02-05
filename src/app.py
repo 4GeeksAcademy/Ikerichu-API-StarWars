@@ -53,13 +53,73 @@ if __name__ == '__main__':
 @app.route('/people',methods=['GET'])
 def get_all_people():
     peoples = Characters.get_all_characters()
-    response_body = {"Characters": peoples}
+    response_body = {"Characters": [character.serialize() for character in peoples]}
     return jsonify(response_body), 200
 
 @app.route('/people/<int:id>',methods=['GET'])
 def get_a_char(id):
     character=Characters.get_a_people(id)
     if character is None:
-        return jsonify({"msg":"id no encontrada"}), 400
-    response_body = {"Characters": character}
+        return jsonify({"msg":"id no encontrada"}), 404
+    response_body = {"Character": character.serialize()}
     return jsonify(response_body), 200
+
+@app.route('/planets',methods=['GET'])
+def get_all_planets():
+    planets = Planets.get_all_planets()
+    response_body = {"Planets": [planet.serialize() for planet in planets]}
+    return jsonify(response_body), 200
+
+@app.route('/planets/<int:id>',methods=['GET'])
+def get_a_planet(id):
+    planet=Planets.get_a_planet(id)
+    if planet is None:
+        return jsonify({"msg":"id no encontrada"}), 404
+    response_body = {"Planet": planet.serialize()}
+    return jsonify(response_body), 200
+
+@app.route('/users',methods=['GET'])
+def get_all_users():
+    users = User.get_all_users()
+    response_body = {"Users": [user.serialize() for user in users]}
+    return jsonify(response_body), 200
+
+@app.route('/users/favorites',methods=['GET'])
+def get_all_favorites():
+    fav_planets = Fav_planet.get_all_fav_planets()
+    fav_characters = Fav_char.get_all_fav_characters()
+    response_body = {
+        "Fav_planets": [fav_planet.serialize() for fav_planet in fav_planets],
+        "Fav_characters": [fav_char.serialize() for fav_char in fav_characters]
+    }
+    return jsonify(response_body), 200
+
+@app.route('/favorites/planet/<int:id>',methods=['POST'])
+def add_fav_planet(id):
+    user_id = request.json.get("user_id")
+    if not user_id:
+        return jsonify({"msg": "user_id is required"}), 400
+    Fav_planet.add_fav_planet(user_id, id)
+    return jsonify({"msg": "Favorite planet added successfully"}), 201
+
+@app.route('/favorites/character/<int:id>',methods=['POST'])
+def add_fav_character(id):
+    user_id = request.json.get("user_id")
+    if not user_id:
+        return jsonify({"msg": "user_id is required"}), 400
+    Fav_char.add_fav_char(user_id, id)
+    return jsonify({"msg": "Favorite character added successfully"}), 201
+
+@app.route('/favorites/planet/<int:id>',methods=['DELETE'])
+def delete_fav_planet(id):
+    deleted = Fav_planet.delete_planet(id)
+    if not deleted:
+        return jsonify({"msg": "Favorite planet not found"}), 404
+    return jsonify({"msg": "Favorite planet deleted successfully"}), 200
+
+@app.route('/favorites/character/<int:id>',methods=['DELETE'])
+def delete_fav_character(id):
+    deleted = Fav_char.delete_character(id)
+    if not deleted:
+        return jsonify({"msg": "Favorite character not found"}), 404
+    return jsonify({"msg": "Favorite character deleted successfully"}), 200

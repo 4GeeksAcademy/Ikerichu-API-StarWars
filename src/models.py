@@ -11,6 +11,9 @@ class User(db.Model):
     fav_planet: Mapped["Fav_planet"] = relationship(back_populates="user")
     fav_char: Mapped["Fav_char"] = relationship(back_populates="user")
 
+    def get_all_users():
+        return db.session.scalars(db.select(User)).all()
+
     def serialize(self):
         return {
             "id": self.id,
@@ -24,7 +27,21 @@ class Fav_planet(db.Model):
     user: Mapped["User"] = relationship(back_populates="fav_planet")
     planet: Mapped["Planets"] = relationship(back_populates="fav_planet")
 
+    def get_all_fav_planets():
+        return db.session.scalars(db.select(Fav_planet)).all()
+    
+    def add_fav_planet(user_id, planet_id):
+        new_fav_planet = Fav_planet(user_id=user_id, planet_id=planet_id)
+        db.session.add(new_fav_planet)
+        db.session.commit()
 
+    def delete_planet(id):
+        fav_planet = db.session.get(Fav_planet, id)
+        if fav_planet is None:
+            return False
+        db.session.delete(fav_planet)
+        db.session.commit()
+        return True
 
     def serialize(self):
         return {
@@ -40,7 +57,21 @@ class Fav_char(db.Model):
     user: Mapped["User"] = relationship(back_populates="fav_char")
     characters: Mapped["Characters"] = relationship(back_populates="fav_char")
 
+    def get_all_fav_characters():
+        return db.session.scalars(db.select(Fav_char)).all()
+    
+    def add_fav_char(user_id, char_id):
+        new_fav_char = Fav_char(user_id=user_id, char_id=char_id)
+        db.session.add(new_fav_char)
+        db.session.commit()
 
+    def delete_character(id):
+        fav_char = db.session.get(Fav_char, id)
+        if fav_char is None:
+            return False
+        db.session.delete(fav_char)
+        db.session.commit()
+        return True
 
     def serialize(self):
         return {
@@ -56,7 +87,11 @@ class Planets(db.Model):
     character: Mapped[list["Characters"]]=relationship(back_populates="planet")
     characters: Mapped[list[int]]=mapped_column(ForeignKey("characters.id"))
 
-    
+    def get_all_planets():
+        return db.session.scalars(db.select(Planets)).all()
+
+    def get_a_planet(id):
+        return db.session.get(Planets, id)
     
 
 
@@ -78,14 +113,10 @@ class Characters(db.Model):
     planet: Mapped["Planets"]=relationship(back_populates="characters")
 
     def get_all_characters():
-        return Characters
+        return db.session.scalars(db.select(Characters)).all()
 
     def get_a_people(id):
-        char=None
-        for m in Characters.id:
-            if id == m["id"]:
-                char=m
-        return char
+        return db.session.get(Characters, id)
 
 
     def serialize(self):
