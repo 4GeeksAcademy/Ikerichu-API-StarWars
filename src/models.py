@@ -85,7 +85,7 @@ class Planets(db.Model):
     name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     population: Mapped[int] = mapped_column(nullable=False)
     character: Mapped[list["Characters"]]=relationship(back_populates="planet")
-    characters: Mapped[list[int]]=mapped_column(ForeignKey("characters.id"))
+    
 
     def get_all_planets():
         return db.session.scalars(db.select(Planets)).all()
@@ -100,7 +100,6 @@ class Planets(db.Model):
             "id": self.id,
             "name": self.name,
             "population": self.population,
-            "characters": self.characters
         }
 
 class Characters(db.Model):
